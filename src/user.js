@@ -10,17 +10,23 @@ app.use(express.json());
 
 // PostgreSQL
 const pool = new Pool({
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DB_NAME,
-    password: process.env.POSTGRES_PASSWORD,
-    port: 5432,
+    user: process.env.PG_USER || 'postgres',
+    host: process.env.PG_HOST || 'postgres',
+    database: process.env.PG_DATABASE || 'platter_db',
+    password: process.env.PG_PASSWORD || 'postgres123',
+    port: process.env.PG_PORT || 5432,
 });
 
-const server = http.createServer(app);
+// Error handling
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle PostgreSQL client', err);
+});
 
+// Create an HTTP & Websocket
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+// Function to broadcast data to all connected clients
 const broadcast = (data) => {
     wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
@@ -29,7 +35,7 @@ const broadcast = (data) => {
     });
 };
 
-// User route to get user details by ID
+// User route
 app.get('/user/:id', async (req, res) => {
     const userId = parseInt(req.params.id, 10);
 
@@ -48,22 +54,29 @@ app.get('/user/:id', async (req, res) => {
     }
 });
 
-// WebSocket
+// WebSocket Conn Handler
 wss.on('connection', (ws) => {
     console.log('New client connected');
+
+    ws.on('message', (message) => {
+        handleNotification(message);
+    });
 
     ws.on('close', () => {
         console.log('Client disconnected');
     });
 });
 
+// Handle notif and broadcast
 const handleNotification = (message) => {
-    const notificationData = JSON.parse(message);
-    console.log('Received notification:', notificationData);
-    broadcast(JSON.stringify(notificationData)); // Broadcast to all clients
+    try {
+        const notificationData = JSON.parse(message);
+        console.log('Received notification:', notificationData);
+        broadcast(JSON.stringify(notificationData)); // Broadcast to all clients
+    } catch (error) {
+        console.error('Error parsing message:', error);
+    }
 };
-
-wss.on('message', handleNotification);
 
 server.listen(port, () => {
     console.log(`User service running on http://localhost:${port}`);

@@ -4,16 +4,16 @@ const amqp = require('amqplib/callback_api'); // For RabbitMQ
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 9302;
+const PORT = 9302;
 
 app.use(express.json());
 
 // PostgreSQL
 const dbClient = new Client({
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DB_NAME,
-    password: process.env.POSTGRES_PASSWORD,
+    user: 'postgres',
+    host: 'postgres',
+    database: 'platter_db',
+    password: 'postgres123',
     port: 5432,
 });
 
@@ -22,7 +22,7 @@ dbClient.connect()
     .catch(err => console.error('Connection error', err.stack));
 
 // RabbitMQ setup
-const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost';
+const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://rabbitmq';
 
 amqp.connect(RABBITMQ_URL, (error0, connection) => {
     if (error0) {

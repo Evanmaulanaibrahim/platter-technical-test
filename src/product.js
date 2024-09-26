@@ -17,7 +17,7 @@ const pool = new Pool({
 });
 
 const connectToRabbitMQ = (callback) => {
-    amqp.connect(process.env.RABBITMQ_URL, (error0, connection) => {
+    amqp.connect(process.env.RABBITMQ_URL || 'amqp://rabbitmq', (error0, connection) => {
         if (error0) {
             console.error('Error connecting to RabbitMQ:', error0.message);
             return;
