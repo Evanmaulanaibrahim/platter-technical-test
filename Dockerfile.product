@@ -1,0 +1,9 @@
+# Dockerfile.product
+FROM node:14
+LABEL maintainer="EvanMaulanaIbrahim"
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 9301
+CMD ["node", "src/product.js"]

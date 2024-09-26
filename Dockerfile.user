@@ -1,0 +1,9 @@
+# Dockerfile.user
+FROM node:14
+LABEL maintainer="EvanMaulanaIbrahim"
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 9303
+CMD ["node", "src/user.js"]

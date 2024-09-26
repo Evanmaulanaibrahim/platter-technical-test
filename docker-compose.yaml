@@ -1,0 +1,65 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres
+    container_name: platter-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: platter_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: platter-rabbitmq
+    ports:
+      - "5672:5672"       # RabbitMQ default port
+      - "15672:15672"     # RabbitMQ management UI
+
+  product:
+    build:
+      context: .
+      dockerfile: Dockerfile.product
+    command: node src/product.js
+    ports:
+      - "9301:9301"
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  payment:
+    build:
+      context: .
+      dockerfile: Dockerfile.payment
+    command: node src/payment.js
+    ports:
+      - "9302:9302"
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  notification:
+    build:
+      context: .
+      dockerfile: Dockerfile.notification
+    command: node src/notification.js
+    ports:
+      - "9303:9303"
+    depends_on:
+      - rabbitmq
+
+  user:
+    build:
+      context: .
+      dockerfile: Dockerfile.user
+    command: node src/user.js
+    ports:
+      - "9304:9304"
+    depends_on:
+      - notification
+
+volumes:
+  pgdata:

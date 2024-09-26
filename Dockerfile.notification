@@ -1,0 +1,9 @@
+# Dockerfile.notification
+FROM node:14
+LABEL maintainer="EvanMaulanaIbrahim"
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 9304
+CMD ["node", "src/notification.js"]
